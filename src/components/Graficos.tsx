@@ -25,8 +25,17 @@ const tooltip = {
   formatter: (v: number) => reais(v),
 };
 
-export function BarrasHorizontais({ dados, titulo }: { dados: { nome: string; valor: number }[]; titulo: string }) {
+export function BarrasHorizontais({
+  dados,
+  titulo,
+  formato = "reais",
+}: {
+  dados: { nome: string; valor: number }[];
+  titulo: string;
+  formato?: "reais" | "numero";
+}) {
   const altura = Math.max(160, dados.length * 36);
+  const fmt = formato === "reais" ? reais : (v: number) => v.toLocaleString("pt-BR");
   return (
     <figure>
       <figcaption className="sr-only">{titulo}</figcaption>
@@ -34,14 +43,14 @@ export function BarrasHorizontais({ dados, titulo }: { dados: { nome: string; va
         <ResponsiveContainer>
           <BarChart data={dados} layout="vertical" margin={{ left: 8, right: 24 }}>
             <CartesianGrid horizontal={false} stroke="#D6DDDC" />
-            <XAxis type="number" tickFormatter={curto} tick={eixo} />
+            <XAxis type="number" tickFormatter={formato === "reais" ? curto : undefined} tick={eixo} allowDecimals={false} />
             <YAxis type="category" dataKey="nome" width={170} tick={eixo} />
-            <Tooltip {...tooltip} />
+            <Tooltip {...tooltip} formatter={(v: number) => fmt(v)} />
             <Bar dataKey="valor" name="Valor" fill={LAGO} radius={[0, 6, 6, 0]} />
           </BarChart>
         </ResponsiveContainer>
       </div>
-      <TabelaAcessivel titulo={titulo} linhas={dados.map((d) => [d.nome, reais(d.valor)])} />
+      <TabelaAcessivel titulo={titulo} linhas={dados.map((d) => [d.nome, fmt(d.valor)])} />
     </figure>
   );
 }

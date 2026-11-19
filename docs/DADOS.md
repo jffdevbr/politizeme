@@ -44,8 +44,10 @@ Regra do projeto: **todo dado mostra de onde veio e se é real ou simulado.** Es
 
 | Achado | Como tratamos |
 | --- | --- |
-| O arquivo anual **não inclui as passagens aéreas emitidas pelo SIGEPA** (sistema de passagens da própria Câmara). A API `/deputados/{id}/despesas` inclui. | Complementamos só as linhas SIGEPA pela API, para os 70 deputados em 2025 e 2026. |
-| Na API, o campo `valorLiquido` vem **com sinal invertido** para documentos comuns (ex.: documento de R$ 301,61 sem glosa aparece como −301,61). | Usamos `valorDocumento − valorGlosa`, que confere com o arquivo anual linha a linha. |
+| O arquivo anual de **2026 não inclui as passagens aéreas emitidas pelo SIGEPA** (sistema de passagens da própria Câmara); o de 2025 inclui. A API `/deputados/{id}/despesas` inclui. | O ETL detecta os anos sem nenhuma linha SIGEPA no arquivo e complementa só esses pela API (hoje, 2026), para não contar em dobro. |
+| Na API, o campo `valorLiquido` vem **com sinal invertido** para documentos comuns (ex.: documento de R$ 301,61 sem glosa aparece como −301,61). | Usamos `valorDocumento − valorGlosa` em todas as fontes. |
+| No arquivo anual, a **complementação do auxílio-moradia** (paga com saldo da cota, fornecedor = a própria Câmara) tem `vlrDocumento` positivo e `vlrLiquido` negativo, o que fazia deputados parecerem ter "gasto negativo". | Pela mesma regra (`documento − glosa`) ela entra como gasto da cota, na categoria "Auxílio-moradia". **Interpretação nossa**, a confirmar com a Câmara. |
+| Ainda há meses com total negativo (ex.: set/2026, período eleitoral): cancelamentos de passagens reembolsados superam os gastos do mês. | Mantidos, porque é o dado oficial. A tela explica que valores negativos são estornos e cancelamentos. |
 | Votações secretas (ex.: escolha de ministro do TCU) aparecem na API com votos sem valor (`null`). | Excluídas da seleção: não existe voto individual público. |
 | De setembro a novembro de 2026 (período eleitoral) houve poucas votações nominais. | A seleção cobre 2025–2026 e pega as 20 mais recentes de mérito. |
 

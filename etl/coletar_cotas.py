@@ -53,13 +53,15 @@ def _agregar(linhas):
 
 def camara(deputados):
     ids = {d["idOficial"]: d["id"] for d in deputados}
-    linhas, ignoradas = [], 0
+    linhas, ignoradas, anos_sem_sigepa = [], 0, []
     for ano in ANOS:
+        tem_sigepa = False
         zip_path = baixar(f"https://www.camara.leg.br/cotas/Ano-{ano}.csv.zip", RAW / f"cota_camara_{ano}.zip")
         with zipfile.ZipFile(zip_path) as z:
             nome = next(n for n in z.namelist() if n.endswith(".csv"))
             texto = io.TextIOWrapper(z.open(nome), encoding="utf-8-sig")
             for r in csv.DictReader(texto, delimiter=";"):
+                tem_sigepa = tem_sigepa or "SIGEPA" in r["txtDescricao"]
                 if r["sgUF"] != "SP":
                     continue
                 pid = ids.get(r["ideCadastro"]) or ids.get(r["nuDeputadoId"])
@@ -75,17 +77,22 @@ def camara(deputados):
                     "categoriaOficial": r["txtDescricao"],
                     "fornecedor": r["txtFornecedor"].strip(),
                     "cnpjCpf": r["txtCNPJCPF"].strip(),
-                    "valor": para_float(r["vlrLiquido"]),
+                    # documento − glosa: o arquivo grava a complementação do auxílio-moradia com líquido negativo,
+                    # embora seja uso da cota; cancelamentos de passagem já vêm com documento negativo.
+                    "valor": round(para_float(r["vlrDocumento"]) - para_float(r["vlrGlosa"]), 2),
                     "urlDocumento": r["urlDocumento"] or None,
                 })
+        if not tem_sigepa:
+            anos_sem_sigepa.append(ano)
     print(f"  Câmara: {len(linhas)} despesas de SP; {ignoradas} de ex-deputados ignoradas")
-    sigepa = passagens_sigepa(deputados)
-    print(f"  Câmara: {len(sigepa)} passagens aéreas SIGEPA complementadas pela API")
+    sigepa = passagens_sigepa(deputados, anos_sem_sigepa)
+    print(f"  Câmara: {len(sigepa)} passagens SIGEPA complementadas pela API (anos sem SIGEPA no arquivo: {anos_sem_sigepa})")
     return linhas + sigepa
 
 
-def passagens_sigepa(deputados):
-    """O arquivo anual não traz as passagens emitidas pelo sistema SIGEPA da Câmara; a API traz.
+def passagens_sigepa(deputados, anos):
+    """O arquivo anual de 2026 não traz as passagens do SIGEPA (o de 2025 traz); a API traz.
+    Complementamos só os anos em que o arquivo não tem nenhuma linha SIGEPA, para não contar em dobro.
 
     Na API o campo valorLiquido vem com o sinal invertido para documentos comuns, então usamos
     valorDocumento - valorGlosa, que confere com o arquivo anual nas demais categorias.
@@ -115,7 +122,7 @@ def passagens_sigepa(deputados):
                 return saida
             pagina += 1
 
-    tarefas = [(d, ano) for d in deputados for ano in ANOS]
+    tarefas = [(d, ano) for d in deputados for ano in anos]
     linhas = []
     with ThreadPoolExecutor(max_workers=8) as ex:
         for resultado in ex.map(lambda t: do_deputado(*t), tarefas):

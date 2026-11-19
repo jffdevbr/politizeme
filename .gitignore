@@ -1,0 +1,39 @@
+# --- Contexto da sessão de desenvolvimento (não versionar) ---
+contexto_materias.txt
+contexto_minha_ideia_mvp.txt
+README_POLITIZEME.md
+PolitizeMe_Documentacao.pdf
+PolitizeMe_Guia_Visual.pdf
+GS_2026_2_-_2TSCP_F_R_S_V_W_CitizenTech_resumo.pdf
+.claude/
+
+# --- Segredos ---
+.env
+.env.local
+.env.*.local
+
+# --- Node / Next.js ---
+node_modules/
+.next/
+out/
+build/
+*.tsbuildinfo
+next-env.d.ts
+npm-debug.log*
+
+# --- Python / ETL ---
+__pycache__/
+*.pyc
+.venv/
+venv/
+
+# --- Dados brutos (data lake local; o snapshot tratado é versionado) ---
+data/raw/
+
+# --- Backups do banco ---
+backups/
+
+# --- Sistema / editor ---
+.DS_Store
+Thumbs.db
+.vercel

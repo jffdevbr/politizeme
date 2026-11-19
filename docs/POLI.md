@@ -23,6 +23,12 @@ flowchart TD
 2. **Intenções conhecidas** são respondidas por consulta direta ao banco. Funciona **sem chave de API** e sem custo.
 3. **Modo LLM (opcional):** se houver chave, perguntas não reconhecidas vão para o Claude com um contexto montado a partir do banco (RAG simples). O modelo só pode usar esse contexto.
 
+**Implementação** ([src/lib/poli.ts](../src/lib/poli.ts)): SDK oficial `@anthropic-ai/sdk`, modelo `claude-opus-5-5` por padrão (configurável em `ANTHROPIC_MODEL`), esforço `low` (respostas curtas) e *fallback* automático do servidor (`fallbacks: "default"`) caso o modelo recuse. A interface marca respostas escritas por IA com "resposta escrita por IA a partir dos dados oficiais".
+
+**Acessibilidade na conversa:** botão "Ouvir" em cada resposta (síntese de voz do navegador) e botão de microfone para perguntar falando (reconhecimento de voz do navegador, quando disponível). Nenhum áudio é enviado ao servidor do PolitizeMe.
+
+**Registro de uso:** só a intenção reconhecida (ex.: `gasto`, `recusa_voto`) é registrada, de forma anônima. O texto da pergunta não é guardado.
+
 ## 2. Intenções reconhecidas (MVP)
 
 | Intenção | Exemplo de pergunta | Fonte citada |
@@ -66,6 +72,8 @@ flowchart TD
 - Termine com `Fonte: <nome da fonte>` usando a fonte do contexto.
 
 ## 6. Perguntas de teste (verificação)
+
+Resultado em 18/11/2026, modo sem chave: **12 de 12** com a intenção esperada.
 
 | Pergunta | Esperado |
 | --- | --- |

@@ -26,7 +26,7 @@ services:
       DATABASE_URL: postgresql://politizeme:politizeme@db:5432/politizeme
       SESSION_SECRET: ${SESSION_SECRET:-troque-este-segredo-em-producao-politizeme}
       ANTHROPIC_API_KEY: ${ANTHROPIC_API_KEY:-}
-      ANTHROPIC_MODEL: ${ANTHROPIC_MODEL:-claude-sonnet-5-5}
+      ANTHROPIC_MODEL: ${ANTHROPIC_MODEL:-claude-opus-5-5}
 
 volumes:
   pgdata:

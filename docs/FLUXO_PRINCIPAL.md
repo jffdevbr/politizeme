@@ -23,6 +23,17 @@ O cadastro existe e funciona, mas aparece no vídeo só como "crie uma conta par
 - Usa **só dados reais** nos passos 1 a 5. O único passo simulado (6) é o canal WhatsApp, e ele é rotulado.
 - Mostra os diferenciais: ligação com a cidade (passo 1), IA com fonte (passo 5), neutralidade (passos 2 e 3) e acompanhamento contínuo (passo 6).
 
-## Decisão pendente da equipe
+## Votação usada no vídeo (decidida em 18/11/2026)
 
-**Qual votação usar no vídeo.** A manchete da Parte 1 fala de salário mínimo, mas essa notícia é fictícia até ser conferida. Proposta: depois da coleta (bloco 2), escolhemos juntos **uma votação real** da lista coletada, com tema próximo da vida da Carla (renda, aposentadoria, impostos), e ajustamos a manchete do roteiro para ela.
+**PEC 221/2019 – redução da jornada de trabalho para 36 horas semanais.** Dado real, conferível na fonte:
+
+| Campo | Valor |
+| --- | --- |
+| O que foi votado | Aprovada, em segundo turno, a Proposta de Emenda à Constituição nº 221, de 2019 |
+| Data | 27/05/2026, Plenário da Câmara |
+| Placar geral | Sim 461 · Não 19 |
+| Deputados de SP em exercício hoje | Sim 61 · Não 4 (os demais sem voto registrado) |
+| Texto oficial | https://www.camara.leg.br/propostas-legislativas/2233802 |
+| No app | `/votacoes/2233802-438` |
+
+**Ajuste no roteiro da Parte 1:** a manchete que a Carla vê deixa de ser sobre salário mínimo (fictícia) e passa a ser sobre a votação real da jornada de 36 horas. Sugestão de texto, sem adjetivos e sem lado: *"Câmara aprova PEC que reduz jornada de trabalho para 36 horas semanais"*. A pergunta dela continua a mesma: "Como votaram os deputados que me representam?"

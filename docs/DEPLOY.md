@@ -51,4 +51,17 @@ npm run dev
 
 ## Vercel + Neon
 
-> Será preenchido no bloco 5.
+Planos gratuitos, sem cartão: Vercel Hobby (uso não comercial) e Neon Free (Postgres que "adormece" sem uso; o primeiro acesso depois disso demora alguns segundos).
+
+1. Entre em [vercel.com](https://vercel.com) com a conta do GitHub.
+2. **Add New → Project** → importe `jffdevbr/politizeme` → **Deploy**. Este primeiro deploy **vai falhar** porque ainda não há banco. É esperado.
+3. No projeto: **Storage → Create Database → Neon** → crie o banco (região `São Paulo`, se disponível) e **conecte ao projeto**. A integração cria as variáveis `DATABASE_URL` e `DATABASE_URL_UNPOOLED`.
+4. **Settings → Environment Variables** → adicione `SESSION_SECRET` com um valor longo e aleatório. Opcional: `ANTHROPIC_API_KEY` para o modo com IA do Poli (cobrança à parte na API da Anthropic).
+5. **Deployments → ⋯ → Redeploy.**
+
+O script `vercel-build` do `package.json` cria as tabelas (`prisma db push`), carrega o snapshot de `data/snapshot/` se o banco estiver vazio e compila o site. Cada `git push` na `main` publica uma nova versão.
+
+**Diferenças em relação ao Docker:**
+- `RECUPERACAO_DEMO` fica desligada: sem provedor de e-mail, o link de nova senha não é mostrado na tela (mostrar permitiria a qualquer pessoa trocar a senha de outra).
+- O cookie de sessão usa `secure` (HTTPS).
+- Para atualizar os dados oficiais: rode o ETL localmente, faça commit do snapshot e recarregue o banco com `DATABASE_URL=<url do Neon> node prisma/seed.mjs --force`.

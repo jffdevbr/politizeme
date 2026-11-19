@@ -24,6 +24,7 @@ services:
       - "3000:3000"
     environment:
       DATABASE_URL: postgresql://politizeme:politizeme@db:5432/politizeme
+      DATABASE_URL_UNPOOLED: postgresql://politizeme:politizeme@db:5432/politizeme
       SESSION_SECRET: ${SESSION_SECRET:-troque-este-segredo-em-producao-politizeme}
       ANTHROPIC_API_KEY: ${ANTHROPIC_API_KEY:-}
       ANTHROPIC_MODEL: ${ANTHROPIC_MODEL:-claude-opus-5-5}

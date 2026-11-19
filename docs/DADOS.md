@@ -13,7 +13,7 @@ Regra do projeto: **todo dado mostra de onde veio e se é real ou simulado.** Es
 | Senadores de SP | REAL | API Senado | mandatos atuais |
 | Cota parlamentar dos deputados (CEAP) | REAL | Câmara – arquivo anual da cota | 2025 e 2026 (até a coleta) |
 | Cota dos senadores (CEAPS) | REAL | Senado – transparência | 2025 e 2026 (até a coleta) |
-| Votações nominais do plenário + votos dos deputados de SP + orientação dos partidos | REAL | API Câmara v2 | votações recentes selecionadas |
+| Votações nominais do plenário + votos dos deputados de SP + orientação dos partidos | REAL | API Câmara v2 | 20 votações de mérito mais recentes (2025–2026) |
 | Participação nas votações | REAL (derivado) | Calculado a partir dos votos | votações selecionadas |
 | Municípios de SP | REAL | IBGE – localidades | atual |
 | CEP → município | REAL (consulta em tempo real) | ViaCEP | atual |
@@ -37,8 +37,17 @@ Regra do projeto: **todo dado mostra de onde veio e se é real ou simulado.** Es
 
 - **Link:** `https://www.camara.leg.br/cotas/Ano-<ANO>.csv.zip` (2025 ≈ 7 MB, 2026 ≈ 4,7 MB compactados; ~48 MB descompactado)
 - **Variáveis usadas:** `nuDeputadoId`, `txNomeParlamentar`, `sgUF`, `sgPartido`, `txtDescricao` (categoria), `txtFornecedor`, `txtCNPJCPF`, `datEmissao`, `vlrLiquido`, `numMes`, `numAno`, `urlDocumento` (link da nota fiscal).
-- **Tratamento:** filtrar `sgUF = SP`; descartar lideranças (linhas sem `nuDeputadoId`); converter valores; descartar `vlrLiquido ≤ 0` (estornos são somados no mês correto); traduzir categorias para linguagem simples (ver 4.1); agregar por deputado × mês × categoria.
+- **Tratamento:** filtrar `sgUF = SP` e os deputados em exercício (cruzando `ideCadastro` com o id da API); descartar lideranças e ex-deputados; converter valores; manter valores negativos (estornos), que entram na soma; traduzir categorias para linguagem simples (ver 4.1); agregar por deputado × mês × categoria.
 - **Por que:** responde "quanto meu representante gastou e com quê", com link para cada nota.
+
+**Achados durante a coleta (18/11/2026)**
+
+| Achado | Como tratamos |
+| --- | --- |
+| O arquivo anual **não inclui as passagens aéreas emitidas pelo SIGEPA** (sistema de passagens da própria Câmara). A API `/deputados/{id}/despesas` inclui. | Complementamos só as linhas SIGEPA pela API, para os 70 deputados em 2025 e 2026. |
+| Na API, o campo `valorLiquido` vem **com sinal invertido** para documentos comuns (ex.: documento de R$ 301,61 sem glosa aparece como −301,61). | Usamos `valorDocumento − valorGlosa`, que confere com o arquivo anual linha a linha. |
+| Votações secretas (ex.: escolha de ministro do TCU) aparecem na API com votos sem valor (`null`). | Excluídas da seleção: não existe voto individual público. |
+| De setembro a novembro de 2026 (período eleitoral) houve poucas votações nominais. | A seleção cobre 2025–2026 e pega as 20 mais recentes de mérito. |
 
 ### 2.3 Senado Federal – Dados Abertos e Transparência
 
@@ -61,10 +70,14 @@ Regra do projeto: **todo dado mostra de onde veio e se é real ou simulado.** Es
 
 ## 4. Modelo de dados (resumo)
 
+Cada arquivo do snapshot vira um registro em `Conjunto` (origem REAL/SIMULADO, fonte, link, data de coleta, observação). É dali que saem os selos da interface e a página "Sobre os dados".
+
 | Tabela | Principais campos |
 | --- | --- |
-| `Parlamentar` | id, casa (CAMARA/SENADO), nome, partido, foto, email, origem, fonte, coletadoEm |
-| `Despesa` | parlamentarId, ano, mês, categoria, categoriaSimples, fornecedor, cnpjCpf, valor, urlDocumento, origem, fonte |
+| `Conjunto` | id (nome do arquivo), título, origem, fonte, fonteUrl, coletadoEm, observação, registros |
+| `Parlamentar` | id, casa (CAMARA/SENADO), nome, partido, foto, email, página oficial |
+| `DespesaMensal` | parlamentarId, ano, mês, categoria simples, valor (soma) |
+| `Despesa` / `Fornecedor` | 20 despesas mais recentes e 5 principais fornecedores de cada parlamentar, com link da nota |
 | `Votacao` | id, data, descrição, proposição, ementa, resumoIA (opcional), urlOficial |
 | `Voto` | votacaoId, parlamentarId, voto (Sim/Não/Abstenção/Obstrução/Artigo 17) |
 | `Orientacao` | votacaoId, partido/bloco, orientação |
@@ -89,4 +102,4 @@ O dicionário completo fica no ETL (`etl/categorias.py`) e a categoria oficial c
 
 ## 5. Dados simulados: como são gerados
 
-`etl/gerar_simulados.py` cria emendas e dados de campanha com semente fixa (resultado sempre igual), marcados `origem = SIMULADO`. Na interface aparecem com o selo **"Dado simulado – ilustrativo"** e um texto explicando qual seria a fonte real. Os valores são exibidos, mas nunca usados pelo Poli como fato.
+`etl/gerar_simulados.py` cria emendas e dados de campanha com semente fixa (resultado sempre igual), marcados `origem = SIMULADO`. **Os autores são fictícios** ("Deputada Exemplo A", "Senador Exemplo D"): um valor inventado nunca aparece ligado ao nome de um parlamentar real. Na interface aparecem com o selo **"Dado simulado – ilustrativo"** e um texto explicando qual seria a fonte real. Os valores são exibidos, mas nunca usados pelo Poli como fato.

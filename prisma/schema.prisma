@@ -1,0 +1,193 @@
+// Modelo de dados do PolitizeMe.
+// Dados públicos (Parlamentar, Despesa, Votacao...) e dados de usuário (Usuario, Seguindo) ficam em tabelas separadas.
+// Toda tabela de conteúdo aponta para um Conjunto, que guarda origem (REAL/SIMULADO), fonte e data de coleta.
+
+generator client {
+  provider      = "prisma-client-js"
+  binaryTargets = ["native", "debian-openssl-3.0.x"]
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum Casa {
+  CAMARA
+  SENADO
+}
+
+enum Origem {
+  REAL
+  SIMULADO
+}
+
+model Conjunto {
+  id         String   @id // nome do arquivo do snapshot, ex.: "deputados"
+  titulo     String
+  origem     Origem
+  fonte      String
+  fonteUrl   String
+  coletadoEm DateTime
+  observacao String
+  registros  Int
+}
+
+// ---------- Dados públicos ----------
+
+model Parlamentar {
+  id            String  @id // "camara-<id>" ou "senado-<codigo>"
+  idOficial     String
+  casa          Casa
+  cargo         String
+  nome          String
+  nomeBusca     String
+  partido       String?
+  uf            String
+  foto          String?
+  email         String?
+  paginaOficial String
+
+  despesasMensais DespesaMensal[]
+  despesas        Despesa[]
+  fornecedores    Fornecedor[]
+  votos           Voto[]
+  seguidores      Seguindo[]
+}
+
+model DespesaMensal {
+  id            Int         @id @default(autoincrement())
+  parlamentarId String
+  parlamentar   Parlamentar @relation(fields: [parlamentarId], references: [id], onDelete: Cascade)
+  ano           Int
+  mes           Int
+  categoria     String
+  valor         Float
+
+  @@index([parlamentarId])
+}
+
+model Despesa {
+  id               Int         @id @default(autoincrement())
+  parlamentarId    String
+  parlamentar      Parlamentar @relation(fields: [parlamentarId], references: [id], onDelete: Cascade)
+  data             DateTime?
+  ano              Int
+  mes              Int
+  categoria        String
+  categoriaOficial String
+  fornecedor       String
+  cnpjCpf          String
+  valor            Float
+  urlDocumento     String?
+
+  @@index([parlamentarId])
+}
+
+model Fornecedor {
+  id            Int         @id @default(autoincrement())
+  parlamentarId String
+  parlamentar   Parlamentar @relation(fields: [parlamentarId], references: [id], onDelete: Cascade)
+  fornecedor    String
+  cnpjCpf       String
+  total         Float
+  qtd           Int
+
+  @@index([parlamentarId])
+}
+
+model Votacao {
+  id           String   @id
+  data         DateTime
+  descricao    String
+  aprovada     Boolean
+  proposicao   String?
+  proposicaoId Int?
+  ementa       String?
+  urlOficial   String
+  placar       Json
+  totalVotosSP Int
+
+  votos       Voto[]
+  orientacoes Orientacao[]
+}
+
+model Voto {
+  id             Int         @id @default(autoincrement())
+  votacaoId      String
+  votacao        Votacao     @relation(fields: [votacaoId], references: [id], onDelete: Cascade)
+  parlamentarId  String
+  parlamentar    Parlamentar @relation(fields: [parlamentarId], references: [id], onDelete: Cascade)
+  voto           String
+  partidoNaEpoca String?
+
+  @@unique([votacaoId, parlamentarId])
+  @@index([parlamentarId])
+}
+
+model Orientacao {
+  id         Int     @id @default(autoincrement())
+  votacaoId  String
+  votacao    Votacao @relation(fields: [votacaoId], references: [id], onDelete: Cascade)
+  sigla      String
+  orientacao String?
+}
+
+model Municipio {
+  codigoIbge String @id
+  nome       String
+  nomeBusca  String
+}
+
+model EmendaSimulada {
+  id            Int    @id @default(autoincrement())
+  municipioIbge String
+  autor         String
+  area          String
+  ano           Int
+  valorIndicado Float
+  valorPago     Float
+
+  @@index([municipioIbge])
+}
+
+model CampanhaSimulada {
+  id        Int    @id @default(autoincrement())
+  autor     String
+  tipo      String // receita | despesa
+  categoria String
+  valor     Float
+}
+
+// ---------- Dados de usuário (LGPD: mínimo necessário) ----------
+
+model Usuario {
+  id             String     @id @default(cuid())
+  email          String     @unique
+  senhaHash      String
+  municipioIbge  String?
+  canal          String     @default("site") // site | whatsapp
+  consentimentoEm DateTime
+  versaoTermo    String
+  criadoEm       DateTime   @default(now())
+  seguindo       Seguindo[]
+}
+
+model Seguindo {
+  usuarioId     String
+  usuario       Usuario     @relation(fields: [usuarioId], references: [id], onDelete: Cascade)
+  parlamentarId String
+  parlamentar   Parlamentar @relation(fields: [parlamentarId], references: [id], onDelete: Cascade)
+  desde         DateTime    @default(now())
+
+  @@id([usuarioId, parlamentarId])
+}
+
+// Eventos de uso anônimos (sem usuário, sem IP) para o painel de uso.
+model EventoUso {
+  id            Int      @id @default(autoincrement())
+  tipo          String // busca_cep | pergunta_poli | seguir | cadastro
+  detalhe       String?
+  municipioIbge String?
+  criadoEm      DateTime @default(now())
+}

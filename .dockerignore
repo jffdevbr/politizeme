@@ -1,0 +1,11 @@
+node_modules
+.next
+.git
+.claude
+.env
+.env.*
+data/raw
+backups
+*.pdf
+contexto_*.txt
+README_POLITIZEME.md

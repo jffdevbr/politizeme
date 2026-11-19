@@ -6,6 +6,8 @@ PolitizeMe_Documentacao.pdf
 PolitizeMe_Guia_Visual.pdf
 GS_2026_2_-_2TSCP_F_R_S_V_W_CitizenTech_resumo.pdf
 .claude/
+image.png
+*.print.png
 
 # --- Segredos ---
 .env

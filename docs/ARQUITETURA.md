@@ -58,6 +58,7 @@ flowchart LR
 | Autenticação | bcrypt + cookie de sessão assinado (JWT, `jose`) | Cadastro opcional, só para seguir representantes |
 | Assistente Poli | Regras + consultas ao banco; Claude (opcional) | Responde com fonte; recusa indicar voto |
 | Contêineres | Docker Compose (`db` + `app`) | Qualquer pessoa sobe tudo com um comando |
+| Publicação | Vercel (Hobby) + Neon (Postgres gerenciado) | Link público: https://politizeme.vercel.app; cada push na `main` publica nova versão |
 | Backup | `scripts/backup.sh` (`pg_dump`) | Cópia do banco com data no nome |
 
 **Decisões do MVP e por quê**

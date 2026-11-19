@@ -45,7 +45,8 @@ Seguir um parlamentar pode sugerir preferência política. Por isso:
 | Segredos | `.env` fora do Git; `.env.example` sem valores reais | Key Vault + identidade gerenciada |
 | Separação | Tabelas de usuário separadas dos dados públicos | Bancos separados, acesso por função |
 | Criptografia | Em trânsito via HTTPS no Vercel | Em repouso e em trânsito em todos os serviços |
-| Logs do Poli | Não guardam a pergunta junto com a conta | Amostras anonimizadas para revisão de qualidade |
+| Logs do Poli | Só a intenção reconhecida, sem o texto da pergunta e sem a conta | Amostras anonimizadas para revisão de qualidade |
+| Recuperação de senha | Token aleatório de 256 bits, guardado só como hash SHA-256, válido por 30 min, uso único; a resposta é igual exista ou não a conta (não revela e-mails cadastrados). **Sem provedor de e-mail no protótipo:** com `RECUPERACAO_DEMO=1` (padrão no Docker local) o link aparece na tela; em instalação pública essa variável fica desligada | Envio por e-mail (Azure Communication Services Email) |
 
 ## 5. Backup e recuperação
 

@@ -27,6 +27,8 @@ services:
       SESSION_SECRET: ${SESSION_SECRET:-troque-este-segredo-em-producao-politizeme}
       ANTHROPIC_API_KEY: ${ANTHROPIC_API_KEY:-}
       ANTHROPIC_MODEL: ${ANTHROPIC_MODEL:-claude-opus-5-5}
+      # Sem provedor de e-mail no protótipo: mostra o link de nova senha na tela (só para uso local).
+      RECUPERACAO_DEMO: ${RECUPERACAO_DEMO:-1}
 
 volumes:
   pgdata:

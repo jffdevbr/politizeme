@@ -39,7 +39,10 @@ export function Chat() {
   useEffect(() => {
     setTemVoz("webkitSpeechRecognition" in window || "SpeechRecognition" in window);
   }, []);
-  useEffect(() => fim.current?.scrollIntoView({ behavior: "smooth", block: "nearest" }), [msgs, pensando]);
+  useEffect(() => {
+    // Sem retorno: em navegadores novos scrollIntoView devolve uma Promise, que o React trataria como cleanup.
+    fim.current?.scrollIntoView({ behavior: "smooth", block: "nearest" });
+  }, [msgs, pensando]);
 
   async function enviar(pergunta: string) {
     if (!pergunta.trim() || pensando) return;

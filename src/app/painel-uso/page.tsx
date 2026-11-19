@@ -13,6 +13,7 @@ const ROTULO_INTENCAO: Record<string, string> = {
   votos_parlamentar: "Participação em votações",
   votacao: "Resultado de votação",
   votacoes_recentes: "Votações recentes",
+  quem_votou: "Quem votou contra ou a favor",
   glossario: "O que significa (glossário)",
   sobre: "Sobre o PolitizeMe",
   parlamentar: "Sobre um parlamentar",
@@ -47,8 +48,8 @@ export default async function PainelUso() {
     .sort((a, b) => b.valor - a.valor)
     .slice(0, 10);
   const ocultas = municipiosBusca.filter((m) => m._count < MINIMO).length;
+  // Tipos de pergunta são anônimos e não identificam ninguém: mostramos todos. O limite mínimo vale para cidades.
   const intencoesVisiveis = intencoes
-    .filter((i) => i._count >= MINIMO)
     .map((i) => ({ nome: ROTULO_INTENCAO[i.detalhe ?? ""] ?? i.detalhe ?? "?", valor: i._count }))
     .sort((a, b) => b.valor - a.valor);
 
@@ -73,8 +74,8 @@ export default async function PainelUso() {
           desta instalação do protótipo, por isso começam baixos.
         </p>
         <p className="rounded-md bg-lago-suave px-3 py-2 text-sm">
-          Privacidade: os eventos são anônimos (sem conta, sem IP, sem o texto das perguntas). Grupos com menos de{" "}
-          {MINIMO} eventos não aparecem. Quem segue quem nunca é exibido.
+          Privacidade: os eventos são anônimos (sem conta, sem IP, sem o texto das perguntas). Cidades com menos de{" "}
+          {MINIMO} buscas não aparecem. Quem segue quem nunca é exibido.
         </p>
       </header>
 
@@ -100,10 +101,14 @@ export default async function PainelUso() {
         <div className="cartao">
           <h2 className="mb-2 text-xl font-semibold">O que perguntam ao Poli</h2>
           {intencoesVisiveis.length ? (
-            <BarrasHorizontais dados={intencoesVisiveis} titulo="Perguntas ao Poli por tipo" formato="numero" />
+            <BarrasHorizontais dados={intencoesVisiveis} titulo="Perguntas ao Poli por tipo" formato="numero" larguraRotulo={230} />
           ) : (
-            <p className="text-sm text-tinta-suave">Ainda não há tipos de pergunta com {MINIMO} ocorrências ou mais.</p>
+            <p className="text-sm text-tinta-suave">Ainda não há perguntas registradas.</p>
           )}
+          <p className="mt-2 text-xs text-tinta-suave">
+            Mostra só o tipo de pergunta reconhecido, nunca o texto. &quot;Pediu indicação de voto&quot; alto indica que a
+            recusa precisa ser bem explicada; &quot;Não reconhecida&quot; alto indica perguntas que o Poli precisa aprender.
+          </p>
         </div>
       </section>
     </div>

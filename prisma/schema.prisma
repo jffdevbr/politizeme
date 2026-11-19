@@ -171,6 +171,17 @@ model Usuario {
   versaoTermo    String
   criadoEm       DateTime   @default(now())
   seguindo       Seguindo[]
+  recuperacoes   TokenRecuperacao[]
+}
+
+// Recuperação de senha: guardamos só o hash do token; uso único e validade curta.
+model TokenRecuperacao {
+  id        Int       @id @default(autoincrement())
+  usuarioId String
+  usuario   Usuario   @relation(fields: [usuarioId], references: [id], onDelete: Cascade)
+  tokenHash String    @unique
+  expiraEm  DateTime
+  usadoEm   DateTime?
 }
 
 model Seguindo {

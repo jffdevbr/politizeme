@@ -1,10 +1,12 @@
 import { NextResponse } from "next/server";
 import bcrypt from "bcryptjs";
+import { createHash, randomBytes } from "node:crypto";
 import { prisma } from "@/lib/db";
 import { criarSessao, encerrarSessao, usuarioAtual } from "@/lib/sessao";
 
 const VERSAO_TERMO = "2026-11-18";
 const EMAIL = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+const hashToken = (t: string) => createHash("sha256").update(t).digest("hex");
 
 // POST { acao: "cadastro" | "entrar" | "sair", ... }
 export async function POST(req: Request) {
@@ -13,6 +15,21 @@ export async function POST(req: Request) {
 
   if (acao === "sair") {
     await encerrarSessao();
+    return NextResponse.json({ ok: true });
+  }
+
+  if (acao === "redefinir") {
+    const senha = String(corpo.senha ?? "");
+    if (senha.length < 8) return NextResponse.json({ erro: "A senha precisa ter pelo menos 8 caracteres." }, { status: 400 });
+    const token = await prisma.tokenRecuperacao.findUnique({ where: { tokenHash: hashToken(String(corpo.token ?? "")) } });
+    if (!token || token.usadoEm || token.expiraEm < new Date())
+      return NextResponse.json({ erro: "Este link é inválido ou expirou. Peça um novo." }, { status: 400 });
+    await prisma.$transaction([
+      prisma.usuario.update({ where: { id: token.usuarioId }, data: { senhaHash: await bcrypt.hash(senha, 10) } }),
+      prisma.tokenRecuperacao.update({ where: { id: token.id }, data: { usadoEm: new Date() } }),
+      prisma.tokenRecuperacao.deleteMany({ where: { usuarioId: token.usuarioId, usadoEm: null } }),
+    ]);
+    await criarSessao(token.usuarioId);
     return NextResponse.json({ ok: true });
   }
 
@@ -46,6 +63,20 @@ export async function POST(req: Request) {
     await prisma.eventoUso.create({ data: { tipo: "cadastro", municipioIbge, detalhe: usuario.canal } });
     await criarSessao(usuario.id);
     return NextResponse.json({ ok: true });
+  }
+
+  if (acao === "recuperar") {
+    // Resposta igual exista ou não a conta, para não revelar quais e-mails estão cadastrados.
+    const mensagem = "Se existir uma conta com este e-mail, enviamos um link para criar uma nova senha. Ele vale por 30 minutos.";
+    const usuario = await prisma.usuario.findUnique({ where: { email } });
+    if (!usuario) return NextResponse.json({ ok: true, mensagem });
+    const token = randomBytes(32).toString("hex");
+    await prisma.tokenRecuperacao.create({
+      data: { usuarioId: usuario.id, tokenHash: hashToken(token), expiraEm: new Date(Date.now() + 30 * 60 * 1000) },
+    });
+    const link = `/redefinir-senha?token=${token}`;
+    // Sem provedor de e-mail no protótipo: só em modo demonstração (instalação local) o link aparece na tela.
+    return NextResponse.json({ ok: true, mensagem, linkDemonstracao: process.env.RECUPERACAO_DEMO === "1" ? link : undefined });
   }
 
   if (acao === "entrar") {

@@ -107,7 +107,7 @@ const PALAVRAS_TEMA =
   /deputad|senador|vot|cota|gast|emenda|lei\b|projeto|congresso|camara|senado|partido|mandato|politic|pec|plp|\bpl\b|\bmp\b|tramit|represent|eleit|despesa|politizeme|poli\b/;
 
 const STOP = new Set(
-  "como votaram votou votacao votacoes deputados deputado deputada senador senadores sobre quem quais qual quanto quando onde porque para pelos pelas sobre minha cidade paulo fizeram foram estava estao sao eles elas dessa desse essa esse isso aquela aquele".split(
+  "como votaram votou votacao votacoes deputados deputado deputada senador senadores sobre quem quais qual quanto quando onde porque para pelos pelas sobre minha cidade paulo fizeram foram estava estao sao eles elas dessa desse essa esse isso aquela aquele contra favor votar aprovou aprovaram rejeitou quantos ultimas ultima".split(
     " ",
   ),
 );
@@ -225,12 +225,33 @@ export async function responder(pergunta: string, canal: Canal = "site"): Promis
     };
   }
 
+  const sentido = /contra|nao/.test(q) ? "Não" : /a favor|sim/.test(q) ? "Sim" : null;
+  if (votacao && sentido && /quem|quais|lista|nomes?/.test(q)) {
+    const votos = await prisma.voto.findMany({
+      where: { votacaoId: votacao.id, voto: sentido },
+      include: { parlamentar: true },
+      orderBy: { parlamentar: { nomeBusca: "asc" } },
+    });
+    const nomes = votos.map((v) => `${negrito(v.parlamentar.nome, canal)} (${v.partidoNaEpoca})`);
+    const mostrar = nomes.length > 12 ? [...nomes.slice(0, 12), `mais ${nomes.length - 12}`] : nomes;
+    const tema = `${votacao.proposicao}, que ${resumoEmenta(votacao.ementa)}`;
+    return {
+      texto: nomes.length
+        ? `Na votação da ${tema}, em ${data(votacao.data)}, ${nomes.length} ${nomes.length === 1 ? "deputado de SP votou" : "deputados de SP votaram"} ${sentido}: ${lista(mostrar)}.`
+        : `Na votação da ${tema}, em ${data(votacao.data)}, nenhum deputado de SP em exercício hoje votou ${sentido}.`,
+      fonte: F.camara,
+      link: { href: `/votacoes/${votacao.id}`, rotulo: "Ver o voto de todos" },
+      intencao: "quem_votou",
+      modo: "regras",
+    };
+  }
+
   if (votacao && /vot|aprov|rejeit|passou|decid/.test(q)) {
     const votos = await prisma.voto.groupBy({ by: ["voto"], where: { votacaoId: votacao.id }, _count: true });
     const sp = votos.map((v) => `${v.voto} ${v._count}`).join(", ");
     const placar = votacao.placar as Record<string, number>;
     return {
-      texto: `A ${votacao.proposicao} foi ${votacao.aprovada ? "aprovada" : "rejeitada"} na Câmara em ${data(votacao.data)} (Sim ${placar["Sim"] ?? 0}, Não ${placar["Não"] ?? 0}). Os deputados de SP votaram assim: ${sp}. Quer ver o voto de cada um?`,
+      texto: `A ${votacao.proposicao}, que ${resumoEmenta(votacao.ementa)}, foi ${votacao.aprovada ? "aprovada" : "rejeitada"} na Câmara em ${data(votacao.data)} (Sim ${placar["Sim"] ?? 0}, Não ${placar["Não"] ?? 0}). Os deputados de SP votaram assim: ${sp}. Quer ver o voto de cada um?`,
       fonte: F.camara,
       link: { href: `/votacoes/${votacao.id}`, rotulo: "Ver como votou cada deputado" },
       intencao: "votacao",
@@ -305,6 +326,15 @@ export async function responder(pergunta: string, canal: Canal = "site"): Promis
 
 // ---------- utilidades ----------
 
+// Primeira oração da ementa oficial, em minúscula, para caber numa frase ("altera a Constituição para...").
+function resumoEmenta(ementa: string | null) {
+  if (!ementa) return "consta no texto oficial";
+  // Corta no fim da primeira frase (ponto seguido de maiúscula), sem quebrar abreviações como "Art. 7º".
+  const curta = ementa.split(/;|\.\s+(?=[A-ZÀ-Ú])/)[0].replace(/\s+/g, " ").trim();
+  const texto = curta.length > 160 ? `${curta.slice(0, 157)}...` : curta;
+  return texto.charAt(0).toLowerCase() + texto.slice(1);
+}
+
 const negrito = (s: string, canal: Canal) => (canal === "whatsapp" ? `*${s}*` : s);
 const lista = (itens: string[]) =>
   itens.length <= 1 ? itens.join("") : `${itens.slice(0, -1).join(", ")} e ${itens[itens.length - 1]}`;
@@ -324,6 +354,12 @@ async function acharParlamentar(q: string) {
   return null;
 }
 
+const APELIDOS: [RegExp, string][] = [
+  [/6x1|6 x 1|36 horas|jornada|escala de trabalho|carga horaria/, "jornada de trabalho"],
+  [/suas|assistencia social/, "assistencia social"],
+  [/terra(s)? indigena/, "indigena"],
+];
+
 async function acharVotacao(q: string) {
   const votacoes = await prisma.votacao.findMany({ orderBy: { data: "desc" } });
   const numero = q.match(/\b(pec|pl|plp|mp|mpv|pdl)\s*(\d+)/);
@@ -331,8 +367,14 @@ async function acharVotacao(q: string) {
     const v = votacoes.find((v) => normalizar(v.proposicao ?? "").startsWith(`${numero[1]} ${numero[2]}/`));
     if (v) return v;
   }
+  // Apelidos populares de temas: têm prioridade sobre o casamento por palavras.
+  for (const [apelido, termo] of APELIDOS) {
+    if (apelido.test(q)) {
+      const v = votacoes.find((v) => normalizar(v.ementa ?? "").includes(termo));
+      if (v) return v;
+    }
+  }
   const tokens = q.split(" ").filter((t) => t.length >= 5 && !STOP.has(t));
-  if (/36 horas|jornada|escala 6x1|6x1/.test(q)) tokens.push("jornada");
   let melhor: (typeof votacoes)[number] | null = null;
   let pontos = 0;
   for (const v of votacoes) {

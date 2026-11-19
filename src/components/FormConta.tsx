@@ -118,7 +118,10 @@ export function FormConta({ modo, municipios = [], seguir }: { modo: "cadastro" 
           </>
         ) : (
           <>
-            Ainda não tem conta? <Link href="/cadastro">Criar conta</Link>
+            <Link href="/recuperar-senha">Esqueci minha senha</Link>
+            <span className="block">
+              Ainda não tem conta? <Link href="/cadastro">Criar conta</Link>
+            </span>
           </>
         )}
       </p>

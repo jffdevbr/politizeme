@@ -13,6 +13,8 @@ import {
 } from "recharts";
 
 // Cores neutras do design system. Nenhuma cor "julga" um parlamentar ou um voto.
+// Animações desligadas: com Recharts 2 + React 19 a animação de entrada pode travar e esconder as barras;
+// sem animação também é melhor para quem é sensível a movimento e para celulares mais simples.
 const LAGO = "#4F7C8A";
 const SERIES = ["#4F7C8A", "#8FAE9B", "#2E3A3F", "#87938F"];
 const reais = (v: number) => v.toLocaleString("pt-BR", { style: "currency", currency: "BRL", maximumFractionDigits: 0 });
@@ -29,10 +31,12 @@ export function BarrasHorizontais({
   dados,
   titulo,
   formato = "reais",
+  larguraRotulo = 170,
 }: {
   dados: { nome: string; valor: number }[];
   titulo: string;
   formato?: "reais" | "numero";
+  larguraRotulo?: number;
 }) {
   const altura = Math.max(160, dados.length * 36);
   const fmt = formato === "reais" ? reais : (v: number) => v.toLocaleString("pt-BR");
@@ -44,9 +48,9 @@ export function BarrasHorizontais({
           <BarChart data={dados} layout="vertical" margin={{ left: 8, right: 24 }}>
             <CartesianGrid horizontal={false} stroke="#D6DDDC" />
             <XAxis type="number" tickFormatter={formato === "reais" ? curto : undefined} tick={eixo} allowDecimals={false} />
-            <YAxis type="category" dataKey="nome" width={170} tick={eixo} />
+            <YAxis type="category" dataKey="nome" width={larguraRotulo} tick={eixo} />
             <Tooltip {...tooltip} formatter={(v: number) => fmt(v)} />
-            <Bar dataKey="valor" name="Valor" fill={LAGO} radius={[0, 6, 6, 0]} />
+            <Bar dataKey="valor" name="Valor" fill={LAGO} radius={[0, 6, 6, 0]} maxBarSize={28} isAnimationActive={false} />
           </BarChart>
         </ResponsiveContainer>
       </div>
@@ -66,7 +70,7 @@ export function LinhaMensal({ dados, titulo }: { dados: { rotulo: string; valor:
             <XAxis dataKey="rotulo" tick={eixo} interval="preserveStartEnd" />
             <YAxis tickFormatter={curto} tick={eixo} width={56} />
             <Tooltip {...tooltip} />
-            <Line type="monotone" dataKey="valor" name="Gasto no mês" stroke={LAGO} strokeWidth={2.5} dot={{ r: 3 }} />
+            <Line type="monotone" dataKey="valor" name="Gasto no mês" stroke={LAGO} strokeWidth={2.5} dot={{ r: 3 }} isAnimationActive={false} />
           </LineChart>
         </ResponsiveContainer>
       </div>
@@ -97,7 +101,7 @@ export function BarrasAgrupadas({
             <Tooltip {...tooltip} />
             <Legend wrapperStyle={{ fontSize: 13 }} />
             {series.map((s, i) => (
-              <Bar key={s} dataKey={s} fill={SERIES[i % SERIES.length]} radius={[4, 4, 0, 0]} />
+              <Bar key={s} dataKey={s} fill={SERIES[i % SERIES.length]} radius={[4, 4, 0, 0]} isAnimationActive={false} />
             ))}
           </BarChart>
         </ResponsiveContainer>

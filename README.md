@@ -19,7 +19,15 @@ Projeto da **Global Solution 2026.2 da FIAP**, tema **CitizenTech – "O cidadã
 
 ## Documentação
 
-A documentação técnica fica em [`docs/`](docs/).
+| Documento | Conteúdo |
+| --- | --- |
+| [Arquitetura](docs/ARQUITETURA.md) | Fluxo dos dados, o que está implementado e a evolução na Azure |
+| [Dados](docs/DADOS.md) | Fontes, o que é real e o que é simulado, tratamento e modelo |
+| [Fluxo principal](docs/FLUXO_PRINCIPAL.md) | Proposta do fluxo demonstrado no pitch |
+| [Poli](docs/POLI.md) | Regras do assistente |
+| [LGPD](docs/LGPD.md) | Privacidade, segurança, backup e vieses |
+| [Disciplinas](docs/DISCIPLINAS.md) | Onde cada disciplina do ano aparece |
+| [Deploy](docs/DEPLOY.md) | Docker x Vercel e como rodar |
 
 ## Como rodar
 

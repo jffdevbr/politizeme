@@ -1,0 +1,12 @@
+# Disciplinas do ano no PolitizeMe
+
+Onde cada disciplina do 2º ano aparece no projeto, separando o **implementado** neste repositório da **evolução proposta**.
+
+| Disciplina | Tema no projeto | Implementado (MVP) | Evolução |
+| --- | --- | --- | --- |
+| **Cloud Solutions & Scalable Infrastructure** | Arquitetura na Azure | Aplicação conteinerizada (Docker Compose: app + banco), configuração por variáveis de ambiente, deploy opcional no Vercel com Postgres gerenciado | Azure Container Apps, Azure Database for PostgreSQL com redundância entre zonas, Front Door, Key Vault, Monitor ([ARQUITETURA.md](ARQUITETURA.md) §3) |
+| **Data Warehousing & Advanced Data Integration** | Fluxo dos dados completo | ETL Python: bruto → tratado (snapshot) → modelo relacional; cruzamento parlamentar × despesa × votação × voto; padronização de categorias e nomes; cruzamento por nome do CSV do Senado (sem UF) | Data lake bronze/silver/gold no ADLS Gen2, coleta agendada, histórico de mudanças ([DADOS.md](DADOS.md)) |
+| **AI & Deep Learning Applications** | Chatbot | Assistente Poli híbrido: guarda-corpos por regra, intenções respondidas pelo banco, Claude opcional com contexto recuperado (RAG simples) e citação de fonte | RAG com Azure AI Search sobre ementas e textos integrais; WhatsApp real; resposta em áudio ([POLI.md](POLI.md)) |
+| **Machine Learning & AI for Data Science** | Análise das emendas (simplificar e agrupar) + estatística por trás dos números | Estatística descritiva dos dados reais: totais, médias mensais, distribuição por categoria, participação nas votações; *(se sobrar tempo)* agrupamento das votações por tema a partir do texto da ementa | Clusterização das emendas por tema e área (TF-IDF + k-means sobre o objeto da emenda, com dados reais da CGU); simplificação de textos legais com LLM avaliada por humanos |
+| **Data Protection & Ingestion Solutions** | LGPD, backup | Minimização (sem voto/partido/CEP guardado), consentimento com versão e data, exclusão de conta, senha com hash, sessão segura, script de backup e restauração ([LGPD.md](LGPD.md)) | Key Vault, criptografia em repouso gerenciada, backup automático entre regiões, trilha de auditoria |
+| **BI, Analytics & Data Visualization** | Front-end com gráficos | Gráficos interativos: gastos por categoria (barras), gastos mês a mês (linha), resultado das votações (barras com o mesmo peso visual), comparação lado a lado (barras agrupadas), painel de uso agregado | Painel de parceiros no Power BI com dados do TSE (entrega separada da GS) |

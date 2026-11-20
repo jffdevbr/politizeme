@@ -11,6 +11,15 @@ Projeto da **Global Solution 2026.2 da FIAP**, tema **CitizenTech – "O cidadã
 | Guilherme Moraes de Sousa | 563530 |
 | Júlia Ferreira França | 563445 |
 
+## Entregas da Global Solution
+
+| Entrega | Link |
+| --- | --- |
+| Vídeo pitch (YouTube) | https://www.youtube.com/watch?v=wxnNmr1qUZk |
+| Protótipo funcionando | https://politizeme.vercel.app |
+| Apresentação (proposta executiva, PDF) | [GS_2TSCPW_Pitch_PolitizeMe_PolitizeMe.pdf](docs/GS_2TSCPW_Pitch_PolitizeMe_PolitizeMe.pdf) |
+| Documentação técnica (PDF) | [PolitizeMe_Documentacao_Tecnica.pdf](docs/PolitizeMe_Documentacao_Tecnica.pdf) |
+
 | Início | Votação: cada deputado de SP | Assistente Poli |
 | --- | --- | --- |
 | ![Início](docs/img/inicio.png) | ![Votação](docs/img/votacao.png) | ![Assistente](docs/img/assistente.png) |
@@ -89,6 +98,8 @@ Next.js 15 · React 19 · Tailwind 4 · Prisma 6 · PostgreSQL 16 · Recharts ·
 
 | Documento | Conteúdo |
 | --- | --- |
+| [Apresentação](docs/GS_2TSCPW_Pitch_PolitizeMe_PolitizeMe.pdf) | Proposta executiva da GS: problema, solução, mercado, arquitetura, protótipo e painel de Data Visualization |
+| [Documentação técnica](docs/PolitizeMe_Documentacao_Tecnica.pdf) | Versão completa e explicada: telas, arquitetura, dados, Poli, visualização, LGPD, disciplinas, implantação e futuro |
 | [Arquitetura](docs/ARQUITETURA.md) | Fluxo dos dados, o que está implementado e a evolução na Azure |
 | [Dados](docs/DADOS.md) | Fontes, real × simulado, tratamento, achados da coleta e modelo |
 | [Fluxo principal](docs/FLUXO_PRINCIPAL.md) | Fluxo demonstrado no pitch e a votação usada no vídeo (PEC 221/2019) |

@@ -51,7 +51,7 @@ flowchart LR
 
 | Componente | Tecnologia | Função |
 | --- | --- | --- |
-| ETL | Python 3 (`requests`, `pandas`) | Coleta, filtra SP, padroniza e grava o snapshot tratado |
+| ETL | Python 3 (só a biblioteca padrão) | Coleta, filtra SP, padroniza e grava o snapshot tratado |
 | Snapshot | Arquivos JSON versionados no Git | Permite subir a aplicação **sem internet** e sem rodar o ETL; fonte do seed |
 | Banco | PostgreSQL 16 + Prisma ORM | Modelo do mandato (parlamentares, despesas, votações, votos) e dados dos usuários, em tabelas separadas |
 | Aplicação | Next.js 15 (React, TypeScript), Tailwind, Recharts | Páginas, gráficos, API interna, autenticação, assistente |
@@ -90,7 +90,7 @@ flowchart LR
         FD[Azure Front Door<br/>CDN + WAF]
         WA[WhatsApp Business<br/>via Azure Communication Services]
     end
-    PBI[Power BI<br/>painel de parceiros]
+    PBI[Painel de dados<br/>para parceiros]
     KV[Key Vault]
     MON[Azure Monitor<br/>App Insights]
 
@@ -116,7 +116,7 @@ flowchart LR
 | Canais | Simulação do WhatsApp | WhatsApp Business (Azure Communication Services), SMS |
 | Segredos | Arquivo `.env` | Key Vault + identidade gerenciada |
 | Backup | `pg_dump` manual | Backup automático com retenção e restauração em outra região |
-| Painel de BI | Fora do app (Power BI separado) | Power BI ligado à camada gold |
+| Painel de dados | Desenho com dados reais do TSE no PDF da apresentação | Painel para parceiros ligado à camada gold |
 
 **As três perguntas da nuvem**
 
